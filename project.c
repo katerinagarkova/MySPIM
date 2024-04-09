@@ -5,14 +5,19 @@
 /* 10 Points */
 void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
 {
-
+    
 }
 
 /* instruction fetch */
 /* 10 Points */
 int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
 {
-
+    if(PC % 4 == 0)
+    {
+        *instruction=Mem[PC >> 2];
+        return 0;
+    }
+    return 1;
 }
 
 
