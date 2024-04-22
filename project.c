@@ -5,7 +5,7 @@
 /* 10 Points */
 void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
 {
-    
+
 }
 
 /* instruction fetch */
@@ -78,6 +78,20 @@ void write_register(unsigned r2,unsigned r3,unsigned memdata,unsigned ALUresult,
 /* 10 Points */
 void PC_update(unsigned jsec,unsigned extended_value,char Branch,char Jump,char Zero,unsigned *PC)
 {
+    //increments PC by 4 to prepare for instruction
+    *PC += 4; 
+
+    //tests zero and branch if need to branch
+    if(Branch == 1 && Zero == 1)
+    {
+        *PC += (extended_value << 2); //shifts left by 2
+    }
+    else if(Jump == 1)
+    {
+        unsigned upperFour = (*PC & 0xF0000000);
+        //upper four bits of PC combined with jsec shifted left by 2
+        *PC =  upperFour | (jsec << 2); 
+    }
 
 }
 
