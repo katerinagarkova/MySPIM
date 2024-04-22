@@ -57,6 +57,11 @@ void sign_extend(unsigned offset,unsigned *extended_value)
 int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigned funct,char ALUOp,char ALUSrc,unsigned *ALUresult,char *Zero)
 {
 
+    //decides which ALU operation to send
+    switch(ALUOp)
+    {
+
+    }
 }
 
 /* Read / Write Memory */
@@ -71,7 +76,24 @@ int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsig
 /* 10 Points */
 void write_register(unsigned r2,unsigned r3,unsigned memdata,unsigned ALUresult,char RegWrite,char RegDst,char MemtoReg,unsigned *Reg)
 {
-
+    //data comes from memory
+    if(RegWrite == 1 && MemtoReg == 1)
+    {
+        Reg[r2] = memdata;
+    }
+    //data is coming from a register for r-type
+    else if(RegWrite == 1 && MemtoReg == 0 && RegDst == 1)
+    {
+        Reg[r3] = ALUresult;
+    }
+    //for i-type instructions
+    else
+    {
+        if(RegWrite == 1)
+        {
+            Reg[r2] = ALUresult;
+        }
+    }
 }
 
 /* PC update */
