@@ -199,9 +199,96 @@ void sign_extend(unsigned offset,unsigned *extended_value)
 /* 10 Points */
 int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigned funct,char ALUOp,char ALUSrc,unsigned *ALUresult,char *Zero)
 {
-
     //decides which ALU operation to send
+    switch(ALUOp)
+    {
+        case 0x0:
+            if(ALUSrc==1)
+                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
+            else
+                ALU(data1, data2, ALUControl, ALUresult, Zero);
+            break;
+        
+        case 0x1:
+            if(ALUSrc==1)
+                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
+            else
+                ALU(data1, data2, ALUControl, ALUresult, Zero);
+            break;
 
+        case 0x2:
+            if(ALUSrc==1)
+                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
+            else
+                ALU(data1, data2, ALUControl, ALUresult, Zero);
+            break;
+        
+        case 0x3:
+            if(ALUSrc==1)
+                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
+            else
+                ALU(data1, data2, ALUControl, ALUresult, Zero);
+            break;
+
+        case 0x4:
+            if(ALUSrc==1)
+                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
+            else
+                ALU(data1, data2, ALUControl, ALUresult, Zero);
+            break;
+
+        case 0x5:
+            if(ALUSrc==1)
+                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
+            else
+                ALU(data1, data2, ALUControl, ALUresult, Zero);
+            break;
+
+        case 0x6:
+            if(ALUSrc==1)
+                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
+            else
+                ALU(data1, data2, ALUControl, ALUresult, Zero);
+            break;
+        
+        case 0x7:
+            switch(funct)
+            {
+                Case 0x20:
+                    ALU(data1, data2, 0, ALUresult, Zero);
+                    break;
+
+                Case 0x22:
+                    ALU(data1, data2, 1, ALUresult, Zero);
+                    break;
+
+                Case 0x2A:
+                    ALU(data1, data2, 2, ALUresult, Zero);
+                    break;
+
+                Case 0x2B:
+                    ALU(data1, data2, 3, ALUresult, Zero);
+                    break;
+
+                Case 0x24:
+                    ALU(data1, data2, 4, ALUresult, Zero);
+                    break;
+
+                Case 0x25:
+                    ALU(data1, data2, 5, ALUresult, Zero);
+                    break;
+
+                //halt condition occurs
+                default:
+                    return 1;
+            }
+            break;
+
+        //halt condition occurs
+        default:
+            return 1;
+    }
+    return 0;
 }
 
 /* Read / Write Memory */
