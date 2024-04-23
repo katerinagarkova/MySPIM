@@ -68,7 +68,25 @@ int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigne
 /* 10 Points */
 int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsigned *memdata,unsigned *Mem)
 {
+    //checks if word-aligned and in range
+    if(ALUresult % 4 != 0 || ALUresult < 0 || ALUresult > 0xFFFF)
+    {
+        return 1;
+    }
+    //load word
+    if(MemRead == 1)
+    {
+        *memdata = Mem[ALUresult >> 2];
+        return 0;
+    }
+    //store word
+    else if(MemWrite == 1)
+    {
+        Mem[ALUresult >> 2] == data2;
+        return 0;
+    }
 
+    return 0; 
 }
 
 
