@@ -41,7 +41,84 @@ void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1,unsi
 /* 15 Points */
 int instruction_decode(unsigned op,struct_controls *controls)
 {
+    //reduces repetition;
+    controls->RegDst = 0;
+    controls->Jump = 0;
+    controls->Branch = 0;
+    controls->MemRead = 0;
+    controls->MemtoReg = 0;
+    controls->ALUOp = 0;
+    controls->MemWrite = 0;
+    controls->ALUSrc = 0;
+    controls->RegWrite = 0;
 
+    switch(op)
+    {
+        //r-type
+        case 0x0:
+            controls->RegDst = 1;
+            controls->ALUOp = 7;
+            controls->RegWrite = 1;
+            break;
+        //lw
+        case 0x23:
+            controls->RegWrite = 1;
+            controls->MemRead = 1;
+            controls->MemtoReg = 1;
+            controls->ALUSrc = 1;
+            break;
+        //sw
+        case 0x2b:
+            controls->MemWrite = 1;
+            controls->RegDst = 2;
+            controls->MemtoReg = 2;
+            controls->ALUSrc = 1;
+            break;
+        //beq
+        case 0x4:
+            controls->Branch = 1;
+            controls->RegDst = 2;
+            controls->MemtoReg = 2;
+            controls->ALUSrc = 1;
+            controls->ALUOp = 1;
+            break;
+        //jump
+        case 0x2: 
+            controls->Jump = 1;
+            controls->RegDst = 2;
+            controls->Branch = 2;
+            controls->MemtoReg = 2;
+            controls->ALUSrc = 2;
+            controls->ALUOp = 2;
+            break;
+        //addi
+        case 0x8:
+            controls->RegWrite = 1;
+            controls->ALUSrc = 1;
+            break;
+        //lui
+        case 0xf:
+            controls->RegWrite = 1;
+            controls->ALUOp = 6;
+            controls->ALUSrc = 1;
+            break;
+        //stli
+        case 0xa:
+            controls->ALUOp = 2;
+            controls->RegWrite = 1;
+            controls->ALUSrc = 1;
+            break;
+        //stliu
+        case 0xb:
+            controls->ALUOp = 3; //TODO: BRO IDK
+            controls->RegWrite = 1;
+            controls->ALUSrc = 1;
+            break;
+        
+        default: 
+            return 1; //halts program      
+    }
+    return 0;
 }
 
 /* Read Register */
