@@ -1,5 +1,6 @@
 #include "spimcore.h"
 
+//Written By: Alexander Peacock and Katerina Garkova
 
 /* ALU */
 /* 10 Points */
@@ -17,7 +18,7 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
             break;
         //set less than
         case 2: 
-            if((int)A < (int)B)
+            if((signed)A < (signed)B)
                 *ALUresult = 1;
             else
                 *ALUresult = 0;
@@ -39,11 +40,11 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
             break;
         //left shift 16
         case 6: 
-            *ALUresult << 16;
+            *ALUresult = B << 16;
             break;
         //r-type instruction
         case 7: 
-            *ALUresult = !A;
+            *ALUresult = ~A;
             break;
     }
 
@@ -62,9 +63,9 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
 /* 10 Points */
 int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
 {
-    if(PC % 4 == 0)
+    if(Mem!=NULL && instruction !=NULL && PC % 4 == 0)
     {
-        *instruction=Mem[PC >> 2];
+        *instruction = MEM(PC);
         return 0;
     }
     return 1;
@@ -78,8 +79,8 @@ void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1,unsi
     //partition the instructions
     *op = (instruction & 0xfc000000) >> 26; //31-26
     *r1 = (instruction & 0x03e00000) >> 21; //25-21
-    *r2 = (instruction & 0x001f0000) >> 16 //20-16
-    *r3 = (instruction & 0x0000f800) >> 11 //15-11
+    *r2 = (instruction & 0x001f0000) >> 16; //20-16
+    *r3 = (instruction & 0x0000f800) >> 11; //15-11
     *funct = (instruction & 0x0000003f); //5-0
     *offset = (instruction & 0x0000ffff); //15-0
     *jsec = (instruction & 0x03ffffff); // 25-0
@@ -120,8 +121,6 @@ int instruction_decode(unsigned op,struct_controls *controls)
         //sw
         case 0x2b:
             controls->MemWrite = 1;
-            controls->RegDst = 2;
-            controls->MemtoReg = 2;
             controls->ALUSrc = 1;
             break;
         //beq
@@ -129,7 +128,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
             controls->Branch = 1;
             controls->RegDst = 2;
             controls->MemtoReg = 2;
-            controls->ALUSrc = 1;
+            controls->ALUSrc = 2;
             controls->ALUOp = 1;
             break;
         //jump
@@ -139,7 +138,6 @@ int instruction_decode(unsigned op,struct_controls *controls)
             controls->Branch = 2;
             controls->MemtoReg = 2;
             controls->ALUSrc = 2;
-            controls->ALUOp = 2;
             break;
         //addi
         case 0x8:
@@ -160,7 +158,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
             break;
         //stliu
         case 0xb:
-            controls->ALUOp = 3; //TODO: BRO IDK
+            controls->ALUOp = 3;
             controls->RegWrite = 1;
             controls->ALUSrc = 1;
             break;
@@ -187,7 +185,7 @@ void sign_extend(unsigned offset,unsigned *extended_value)
     //checks for negative number
     if((offset >> 15) == 1)
     {
-        *extended_value = offset | 0xffff0000;
+        *extended_value = offset | 0xFFFF0000;
     }
     else
     {
@@ -199,121 +197,72 @@ void sign_extend(unsigned offset,unsigned *extended_value)
 /* 10 Points */
 int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigned funct,char ALUOp,char ALUSrc,unsigned *ALUresult,char *Zero)
 {
-    //decides which ALU operation to send
-    switch(ALUOp)
-    {
-        case 0x0:
-            if(ALUSrc==1)
-                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
-            else
-                ALU(data1, data2, ALUControl, ALUresult, Zero);
-            break;
-        
-        case 0x1:
-            if(ALUSrc==1)
-                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
-            else
-                ALU(data1, data2, ALUControl, ALUresult, Zero);
-            break;
+    //checks if sign extended
+	if (ALUSrc == 1)
+		data2 = extended_value;
 
-        case 0x2:
-            if(ALUSrc==1)
-                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
-            else
-                ALU(data1, data2, ALUControl, ALUresult, Zero);
-            break;
-        
-        case 0x3:
-            if(ALUSrc==1)
-                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
-            else
-                ALU(data1, data2, ALUControl, ALUresult, Zero);
-            break;
+	//checks if r-type instruction
+	if (ALUOp == 7){
 
-        case 0x4:
-            if(ALUSrc==1)
-                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
-            else
-                ALU(data1, data2, ALUControl, ALUresult, Zero);
-            break;
+	switch (funct)
+	{
+		//add
+		case 0x20:
+			ALUOp = 0;
+			break;
 
-        case 0x5:
-            if(ALUSrc==1)
-                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
-            else
-                ALU(data1, data2, ALUControl, ALUresult, Zero);
-            break;
+		//sub
+		case 0x22:
+			ALUOp = 1;
+			break;
 
-        case 0x6:
-            if(ALUSrc==1)
-                ALU(data1, extended_value, ALUControl, ALUresult, Zero);
-            else
-                ALU(data1, data2, ALUControl, ALUresult, Zero);
-            break;
-        
-        case 0x7:
-            switch(funct)
-            {
-                Case 0x20:
-                    ALU(data1, data2, 0, ALUresult, Zero);
-                    break;
+		//or
+		case 0x25:
+			ALUOp = 5;
+			break;
 
-                Case 0x22:
-                    ALU(data1, data2, 1, ALUresult, Zero);
-                    break;
+		//and
+		case 0x24:
+			ALUOp = 4;
+			break;
 
-                Case 0x2A:
-                    ALU(data1, data2, 2, ALUresult, Zero);
-                    break;
+		//less than
+		case 0x2A:
+			ALUOp = 2;
+			break;
 
-                Case 0x2B:
-                    ALU(data1, data2, 3, ALUresult, Zero);
-                    break;
+		//unsigned less than
+		case 0x2B: 
+			ALUOp = 3;
+			break;
 
-                Case 0x24:
-                    ALU(data1, data2, 4, ALUresult, Zero);
-                    break;
-
-                Case 0x25:
-                    ALU(data1, data2, 5, ALUresult, Zero);
-                    break;
-
-                //halt condition occurs
-                default:
-                    return 1;
-            }
-            break;
-
-        //halt condition occurs
-        default:
-            return 1;
+		//halt
+		default:
+			return 1;
+	}
     }
-    return 0;
+	//execute ALU operation
+	ALU(data1, data2, ALUOp, ALUresult, Zero);
+
+	return 0;
 }
 
 /* Read / Write Memory */
 /* 10 Points */
 int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsigned *memdata,unsigned *Mem)
 {
-    //checks if word-aligned and in range
-    if(ALUresult % 4 != 0 || ALUresult < 0 || ALUresult > 0xFFFF)
-    {
-        return 1;
-    }
-    //load word
-    if(MemRead == 1)
-    {
-        *memdata = Mem[ALUresult >> 2];
-        return 0;
-    }
-    //store word
-    else if(MemWrite == 1)
-    {
-        Mem[ALUresult >> 2] == data2;
-        return 0;
-    }
+    //read from memory
+	if (MemRead == 1 && ALUresult % 4 == 0 && ALUresult < 65536)
+		*memdata = MEM(ALUresult);
+	else if(MemRead == 1)
+		return 1;
 
-    return 0; 
+	//write to memory
+	if (MemWrite == 1 && ALUresult % 4 == 0 && ALUresult < 65536)
+		MEM(ALUresult) = data2;
+	else if (MemWrite == 1)
+		return 1;
+	return 0;
 }
 
 
@@ -332,12 +281,9 @@ void write_register(unsigned r2,unsigned r3,unsigned memdata,unsigned ALUresult,
         Reg[r3] = ALUresult;
     }
     //for i-type instructions
-    else
+    else if(RegWrite == 1 && MemtoReg == 0 && RegDst == 0)
     {
-        if(RegWrite == 1)
-        {
-            Reg[r2] = ALUresult;
-        }
+        Reg[r2] = ALUresult;
     }
 }
 
@@ -355,9 +301,8 @@ void PC_update(unsigned jsec,unsigned extended_value,char Branch,char Jump,char 
     }
     else if(Jump == 1)
     {
-        unsigned upperFour = (*PC & 0xF0000000);
         //upper four bits of PC combined with jsec shifted left by 2
-        *PC =  upperFour | (jsec << 2); 
+        *PC =  (jsec << 2) | *PC & 0xF0000000; 
     }
 
 }
